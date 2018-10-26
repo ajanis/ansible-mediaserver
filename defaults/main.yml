@@ -1,0 +1,74 @@
+---
+
+### WEBSERVER CONFIGS
+www_domain: 'example.com'
+www_vhost: '{{ ansible_hostname }}.{{ www_domain }}'
+www_aliases: '{{ www_domain }}'
+www_admin_email: 'admin@example.com'
+
+### FILESERVER CONFIGS
+afp_ldap_auth: True
+
+### STORAGE CONFIGS
+
+# currently cephfs and nfs storage backends supported
+storage_backend: "cephfs"
+#storage_backend: "nfs"
+
+data_mount_root: "/data"
+media_directory: "media"
+www_directory: "public_html"
+backup_directory: "backups"
+ldap_user_home_directory: "homedirs"
+
+
+### NFS EXPORTS CONFIGS
+nfs_export_root: "/exports"
+
+nfs_exports:
+  media:
+    nfs_export: "{{ nfs_export_root }}/{{ media_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+  backups:
+    nfs_export: "{{ nfs_export_root }}/{{ backup_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+  public_html:
+    nfs_export: "{{ nfs_export_root }}/{{ www_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+  homedirs:
+    nfs_export: "{{ nfs_export_root }}/{{ ldap_user_home_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+
+
+### MEDIA SERVER CONFIGS
+
+docker_couchpotato_container_name: 'couchpotato'
+docker_sonarr_container_name: 'sonarr'
+docker_radarr_container_name: 'radarr'
+docker_sabnzbd_container_name: 'sabnzbd'
+docker_plex_container_name: 'plex'
+docker_ombi_container_name: 'ombi'
+
+usenet_incomplete_download_directory: 'downloads/usenet/incomplete'
+usenet_complete_download_directory: 'downloads/usenet/complete'
+usenet_watch_directory: 'downloads/usenet/watch'
+
+services:
+  sabnzbd:
+    svc_port: 8181
+    alias: sab
+  sonarr:
+    svc_port: 8180
+    alias: son
+  radarr:
+    svc_port: 8183
+    alias: rad
+  couchpotato:
+    svc_port: 8182
+    alias: couch
+  plex:
+    svc_port: 32400
+    alias: plex
+  ombi:
+    svc_port: 3579
+    alias: ombi

@@ -1,4 +1,6 @@
 ---
+- include: fileserver.yml
+- include: webserver.yml
 
 - name: install mkvtoolnix
   apt: 

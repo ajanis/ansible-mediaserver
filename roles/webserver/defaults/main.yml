@@ -1,5 +1,0 @@
----
-www_domain: 'example.com'
-www_vhost: '{{ ansible_hostname }}.{{ www_domain }}'
-www_aliases: '{{ www_domain }}'
-www_admin_email: 'admin@example.com'
