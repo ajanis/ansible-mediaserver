@@ -18,10 +18,6 @@
         name: nfs
       when: storage_backend == "nfs"
     - import_role:
-        name: fileserver
-    - import_role:
-        name: webserver
-    - import_role:
         name: docker
     - import_role:
         name: mediaserver
