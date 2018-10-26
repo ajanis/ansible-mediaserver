@@ -1,0 +1,152 @@
+---
+- name: install apache2
+  apt: 
+    name: apache2 
+    update_cache: yes 
+    state: latest
+
+- name: create public_html directory
+  file: 
+    path: "{{ data_mount_root }}/{{ www_directory }}"
+    state: directory 
+    mode: 0755 
+    owner: 2000
+    group: 2000
+  notify:
+    - restart apache2
+  
+- name: Install SSL Key
+  copy:
+    content: "{{ vault_teagan_ssl_private_key }}"
+    dest: "/etc/ssl/private/{{ www_domain }}.key"
+    owner: root
+    group: ssl-cert
+    mode: 0640
+  notify:
+    - restart apache2
+
+- name: Install SSL Certificate Chain
+  copy:
+    content: "{{ vault_teagan_ssl_certificate }}"
+    dest: "/etc/ssl/certs/{{ www_domain }}.pem"
+    owner: root
+    group: ssl-cert
+    mode: 0640
+  notify:
+    - restart apache2
+
+- name: Install SSL Key
+  copy:
+    content: "{{ vault_prettybaked_ssl_private_key }}"
+    dest: "/etc/ssl/private/wildcard_{{ www_domain }}.key"
+    owner: root
+    group: ssl-cert
+    mode: 0640
+  notify:
+    - restart apache2
+
+- name: Install SSL Certificate Chain
+  copy:
+    content: "{{ vault_prettybaked_ssl_certificate }}"
+    dest: "/etc/ssl/certs/wildcard_{{ www_domain }}.pem"
+    owner: root
+    group: ssl-cert
+    mode: 0640
+  notify:
+    - restart apache2
+
+- name: install mod_php7.2
+  apt: 
+    name: libapache2-mod-php7.2
+    update_cache: yes 
+    state: latest
+
+- name: enable mod_php7.2
+  apache2_module: 
+    name: php7.2
+    state: present
+  notify:
+    - restart apache2
+
+- name: enable mod_ssl
+  apache2_module: 
+    name: ssl
+    state: present
+  notify:
+    - restart apache2
+
+- name: enable mod_rewrite
+  apache2_module: 
+    name: rewrite 
+    state: present
+  notify: 
+    - restart apache2
+
+- name: enable mod_proxy
+  apache2_module: 
+    name: proxy 
+    state: present
+  notify:
+    - restart apache2
+
+- name: enable mod_proxy_html
+  apache2_module: 
+    name: proxy_html 
+    state: present
+  notify:
+    - restart apache2
+
+- name: enable mod_proxy_http
+  apache2_module: 
+    name: proxy_http 
+    state: present
+  notify:
+    - restart apache2
+
+
+- name: Update apache run-as user to media
+  replace:
+    path: /etc/apache2/envvars
+    regexp: '^exp.*APACHE_RUN_USER.*'
+    replace: 'export APACHE_RUN_USER=media'
+
+- name: Update apache run-as group to media
+  replace:
+    path: /etc/apache2/envvars
+    regexp: '^exp.*APACHE_RUN_GROUP.*'
+    replace: 'export APACHE_RUN_GROUP=media'
+
+- name: default site
+  template: 
+    src: 000-default.conf 
+    dest: /etc/apache2/sites-available/000-default.conf 
+    owner: root
+  notify:
+    - restart apache2
+
+- name: a2ensite 000-default
+  command: a2ensite 000-default
+  args:
+    creates: /etc/apache2/sites-enabled/000-default.conf
+  notify:
+    - restart apache2
+
+- name: default ssl site
+  template: 
+    src: 001-default-ssl.conf 
+    dest: /etc/apache2/sites-available/001-default-ssl.conf 
+    owner: root
+  notify:
+    - restart apache2
+
+- name: a2ensite 001-default-ssl
+  command: a2ensite 001-default-ssl
+  args:
+    creates: /etc/apache2/sites-enabled/001-default-ssl.conf
+  notify:
+    - restart apache2
+
+- name: apache2 service
+  service: 
+    name: apache2 
+    state: started

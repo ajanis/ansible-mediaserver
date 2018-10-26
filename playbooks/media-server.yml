@@ -1,0 +1,27 @@
+---
+# Deploy Plex Media Server; NZB Services (Sonarr, Radarr, SABnzbd, OMBI); 
+# Apache webserver (vhosts + reverse proxy configs for media services); Samba and Apple File Protocol file sharing services
+# Optionally deploy with NFS or CephFS storage backends (requires openldap role)
+
+- name: Deploy Plex Media Server; NZB Services, Reverse Proxy, Webserver, File Sharing services
+  hosts: mediaservers
+  become: True
+  tasks:
+    - import_role:
+        name: common
+    - import_role:
+        name: openldap
+    - import_role:
+        name: ceph-fs
+      when: storage_backend == "cephfs"
+    - import_role:
+        name: nfs
+      when: storage_backend == "nfs"
+    - import_role:
+        name: fileserver
+    - import_role:
+        name: webserver
+    - import_role:
+        name: docker
+    - import_role:
+        name: mediaserver

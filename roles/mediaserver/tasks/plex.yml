@@ -1,0 +1,20 @@
+- name: 'Start plex docker container'
+  docker_container:
+    name: "{{ docker_plex_container_name }}"
+    image: linuxserver/plex
+    network_mode: "host"
+    env:
+      PUID: '{{ ssh_users.media.uid }}'
+      PGID: '{{ ssh_users.media.gid }}'
+      VERSION: 'latest'
+    volumes:
+      - '{{ media_root }}/configs/{{ docker_plex_container_name }}:/config'
+      - '{{ media_root }}/tv-shows:/tvshows'
+      - '{{ media_root }}/movies:/movies'
+#      - '{{ media_root }}/transcode:/transcode'
+      - '/dev/shm:/transcode'
+    state: 'started'
+    restart_policy: 'always'
+    log_driver: 'syslog'
+    log_options:
+      tag: "{{ docker_plex_container_name }}"

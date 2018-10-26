@@ -1,0 +1,19 @@
+---
+
+- name: install mkvtoolnix
+  apt: 
+    name: mkvtoolnix 
+    update_cache: yes 
+    state: latest
+
+- name: install ffmpeg
+  apt: 
+    name: ffmpeg 
+    update_cache: yes
+    state: latest
+
+- include: sabnzbd.yml
+- include: sonarr.yml
+- include: radarr.yml
+- include: ombi.yml
+- include: plex.yml

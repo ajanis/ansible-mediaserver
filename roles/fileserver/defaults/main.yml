@@ -1,0 +1,30 @@
+# currently cephfs and nfs storage backends supported
+storage_backend: "cephfs"
+#storage_backend: "nfs"
+
+afp_ldap_auth: True
+
+### STORAGE DIRECTORY CONFIG
+data_mount_root: "/data"
+media_directory: "media"
+www_directory: "public_html"
+backup_directory: "backups"
+ldap_user_home_directory: "homedirs"
+
+
+### NFS EXPORTS CONFIG
+nfs_export_root: "/exports"
+
+nfs_exports:
+  media:
+    nfs_export: "{{ nfs_export_root }}/{{ media_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+  backups:
+    nfs_export: "{{ nfs_export_root }}/{{ backup_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+  public_html:
+    nfs_export: "{{ nfs_export_root }}/{{ www_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+  homedirs:
+    nfs_export: "{{ nfs_export_root }}/{{ ldap_user_home_directory }}"
+    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
