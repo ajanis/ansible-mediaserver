@@ -10,6 +10,9 @@
     - name: Build Plex InfluxDB Collector Image
       docker_image:
          path: /tmp/plex-influx
-         name: 10.0.10.175:5000/plex-influx
-         push: yes
+         name: plex-influx
+    - name: Save image to archive
+      docker_image:
+        name: plex-influx
+        archive_path: /tmp/plex-influx.tar
 
