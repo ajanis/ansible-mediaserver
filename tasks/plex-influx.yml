@@ -19,7 +19,7 @@
     name: plex-influx
     image: plex-influx
     volumes:
-      - '{{ media_root }}/configs/plex-influxdb-collector:/plex-influxdb-collector'
+      - '{{ media_root }}/configs/plex-influxdb-collector/config.ini:/plex-influxdb-collector/config.ini'
     state: 'started'
     restart_policy: 'always'
     log_driver: 'syslog'
