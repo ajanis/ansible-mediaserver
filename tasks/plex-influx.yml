@@ -6,7 +6,7 @@
 
 - name: Start Plex InfluxDB Stats Collector
   docker_container:
-    name: plex-influx
+    name: 10.0.10.175:5000/plex-influx
     image: plex-influx
     volumes:
       - '{{ media_root }}/configs/plex-influxdb-collector:/plex-influxdb-collector'
