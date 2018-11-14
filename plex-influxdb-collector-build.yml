@@ -1,0 +1,14 @@
+---
+- name: Check out Plex InfluxDB Collector Repository
+  git:
+    repo: 'https://github.com/ajanis/Plex-to-InfluxDB-Extended.git'
+    dest: /tmp/plex-influx
+
+- name: Build Plex InfluxDB Collector Image
+  hosts: localhost
+  become: False
+  tasks:
+    - name: Build Plex InfluxDB Collector Image
+      docker_image:
+         path: /tmp/plex-influx
+         name: plex-influx
