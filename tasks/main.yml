@@ -19,3 +19,5 @@
 - include: radarr.yml
 - include: ombi.yml
 - include: plex.yml
+- include: plex-influx.yml
+  when: "'telegraf' in group_names"

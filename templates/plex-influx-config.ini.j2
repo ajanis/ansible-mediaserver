@@ -1,0 +1,36 @@
+[GENERAL]
+Delay = 2
+LibraryDelay = 1800
+Output = True
+
+[INFLUXDB]
+Address = {{ influxdb_server_ip }}
+Port = 8086
+Database = plex
+Username =
+Password =
+Verify_SSL = False
+
+[PLEX]
+Username = {{ plex_username }}
+Password = {{ plex_password }}
+# List of servers seperated by a comma.
+# Example: 192.168.1.20,10.0.0.20
+Servers = {{ plex_server_ip }}
+
+[LOGGING]
+Enable = False
+# Valid Options: critical, error, warning, info, debug
+Level = error
+LogFile = output.log
+# Removes things such as server names and ip addresses from logs
+CensorLogs = True
+
+# Any log messages greater than or equal to this number will also be printed to the console
+# Output must also be true under GENERAL
+# DEBUG: 0
+# INFO: 1
+# WARNING: 2
+# ERROR: 3
+# CRITICAL: 4
+PrintThreshold = 0

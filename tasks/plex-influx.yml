@@ -1,0 +1,17 @@
+---
+- name: Generate Plex InfluxDB config file
+  template:
+    src: plex-influx-config.ini.j2
+    dest: '{{ media_root }}/configs/plex-influxdb-collector/config.ini'
+
+- name: Start Plex InfluxDB Stats Collector
+  docker_container:
+    name: plex-influx
+    image: plex-influx
+    volumes:
+      - '{{ media_root }}/configs/plex-influxdb-collector:/plex-influxdb-collector'
+    state: 'started'
+    restart_policy: 'always'
+    log_driver: 'syslog'
+    log_options:
+      tag: "plex-influx"
