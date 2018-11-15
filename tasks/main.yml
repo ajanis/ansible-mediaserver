@@ -1,23 +1,25 @@
 ---
 - include: fileserver.yml
 - include: webserver.yml
-
 - name: install mkvtoolnix
   apt: 
     name: mkvtoolnix 
     update_cache: yes 
     state: latest
-
 - name: install ffmpeg
   apt: 
     name: ffmpeg 
     update_cache: yes
     state: latest
 
-- include: sabnzbd.yml
-- include: sonarr.yml
-- include: radarr.yml
-- include: ombi.yml
-- include: plex.yml
-- include: plex-influx.yml
-  when: "'telegraf' in group_names"
+# Import Docker role to create media service containers and startup files
+
+- name: Set up Docker containers
+  import_role:
+    name: docker
+    tasks_from: container-setup
+
+- name: Create Docker Container Systemd Services
+  import_role:
+    name: docker
+    tasks_from: container-service

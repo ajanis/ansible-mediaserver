@@ -7,13 +7,13 @@ www_aliases: '{{ www_domain }}'
 www_admin_email: 'admin@example.com'
 
 ### FILESERVER CONFIGS
-afp_ldap_auth: True
+afp_ldap_auth: False
 
 ### STORAGE CONFIGS
 
 # currently cephfs and nfs storage backends supported
-storage_backend: "cephfs"
-#storage_backend: "nfs"
+#storage_backend: "cephfs"
+storage_backend: "nfs"
 
 data_mount_root: "/data"
 media_directory: "media"
@@ -29,46 +29,53 @@ nfs_exports:
   media:
     nfs_export: "{{ nfs_export_root }}/{{ media_directory }}"
     mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
-  backups:
-    nfs_export: "{{ nfs_export_root }}/{{ backup_directory }}"
-    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
   public_html:
     nfs_export: "{{ nfs_export_root }}/{{ www_directory }}"
     mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
-  homedirs:
-    nfs_export: "{{ nfs_export_root }}/{{ ldap_user_home_directory }}"
-    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
+
 
 
 ### MEDIA SERVER CONFIGS
-
-docker_couchpotato_container_name: 'couchpotato'
-docker_sonarr_container_name: 'sonarr'
-docker_radarr_container_name: 'radarr'
-docker_sabnzbd_container_name: 'sabnzbd'
-docker_plex_container_name: 'plex'
-docker_ombi_container_name: 'ombi'
 
 usenet_incomplete_download_directory: 'downloads/usenet/incomplete'
 usenet_complete_download_directory: 'downloads/usenet/complete'
 usenet_watch_directory: 'downloads/usenet/watch'
 
-services:
-  sabnzbd:
-    svc_port: 8181
-    alias: sab
-  sonarr:
-    svc_port: 8180
-    alias: son
-  radarr:
-    svc_port: 8183
-    alias: rad
-  couchpotato:
-    svc_port: 8182
-    alias: couch
-  plex:
-    svc_port: 32400
-    alias: plex
-  ombi:
-    svc_port: 3579
-    alias: ombi
+
+apache_vhosts:
+  - servername: "plex.{{ wwww_domain }}"
+    serveralias: "{{ www_aliases }}"
+    extra_parameters: |
+      ProxyPreserveHost on
+      ProxyPass / http://127.0.0.1:32400/ connectiontimeout=30 timeout=30 retry=0 keepalive=On disablereuse=On
+      ProxyPassReverse / http://127.0.0.1:32400/
+
+apache_vhosts_ssl:
+
+  - servername: "plex.{{ www_domain }}"
+    serveralias: "{{ www_aliases }}"
+    sslcertfile: "/etc/ssl/certs/{{ www_domain }}.pem"
+    sslkeyfile: "/etc/ssl/private/{{ www_domain }}.key"
+    extra_parameters: |
+      ProxyPreserveHost on
+      ProxyPass / http://127.0.0.1:32400/ connectiontimeout=30 timeout=30 retry=0 keepalive=On disablereuse=On
+      ProxyPassReverse / http://127.0.0.1:32400/
+
+
+plex_influx_delay: 2
+plex_influx_library_delay: 1800
+plex_influx_output: True
+influxdb_server_ip: localhost
+influxdb_server_port: 8086
+influxdb_plex_database: plex
+influxdb_server_username: ""
+influxdb_server_password: ""
+influxdb_verify_ssl:  False
+plex_username: ""
+plex_password: ""
+plex_server_ip: localhost
+plex_influx_logging: True
+plex_influx_log_level: Info
+plex_influx_log_file: /var/log/plex-influxdb-collector.log 
+plex_influx_censor_logs: True
+plex_influx_log_stdout_threshold: 0
