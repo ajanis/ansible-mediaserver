@@ -103,6 +103,12 @@
   notify:
     - restart apache2
 
+- name: enable mod_status
+  apache2_module:
+    name: status
+    state: present
+  notify:
+    - restart apache2
 
 - name: Update apache run-as user to media
   replace:
