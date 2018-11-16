@@ -1,6 +1,10 @@
 ---
 - include: fileserver.yml
+  when: "'fileservices' in group_names"
+
 - include: webserver.yml
+  when: "'webservices' in group_names"
+
 - name: install mkvtoolnix
   apt: 
     name: mkvtoolnix 
