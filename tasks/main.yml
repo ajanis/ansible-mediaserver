@@ -1,29 +1,9 @@
 ---
-- include: fileserver.yml
+- include_tasks: fileserver.yml
   when: "'fileservices' in group_names"
 
-- include: webserver.yml
+- include_tasks: webserver.yml
   when: "'webservices' in group_names"
 
-- name: install mkvtoolnix
-  apt: 
-    name: mkvtoolnix 
-    update_cache: yes 
-    state: latest
-- name: install ffmpeg
-  apt: 
-    name: ffmpeg 
-    update_cache: yes
-    state: latest
-
-# Import Docker role to create media service containers and startup files
-
-- name: Set up Docker containers
-  import_role:
-    name: docker
-    tasks_from: container-setup
-
-- name: Create Docker Container Systemd Services
-  import_role:
-    name: docker
-    tasks_from: container-service
+- include_tasks: mediaservices.yml
+  when: "'mediaservices' in group_names"
