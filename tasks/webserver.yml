@@ -14,44 +14,26 @@
     group: 2000
   notify:
     - restart apache2
-  
+
 - name: Install SSL Key
   copy:
-    content: "{{ vault_teagan_ssl_private_key }}"
-    dest: "/etc/ssl/private/{{ www_domain }}.key"
+    content: "{{ item.sslkeycontent }}"
+    dest: "{{ item.sslkeyfile }}"
     owner: root
     group: ssl-cert
     mode: 0640
+  with_items: "{{ apache_vhosts_ssl }}"
   notify:
     - restart apache2
 
 - name: Install SSL Certificate Chain
   copy:
-    content: "{{ vault_teagan_ssl_certificate }}"
-    dest: "/etc/ssl/certs/{{ www_domain }}.pem"
+    content: "{{ item.sslcertcontent }}"
+    dest: "{{ item.sslcertfile }}"
     owner: root
     group: ssl-cert
     mode: 0640
-  notify:
-    - restart apache2
-
-- name: Install SSL Key
-  copy:
-    content: "{{ vault_prettybaked_ssl_private_key }}"
-    dest: "/etc/ssl/private/wildcard_{{ www_domain }}.key"
-    owner: root
-    group: ssl-cert
-    mode: 0640
-  notify:
-    - restart apache2
-
-- name: Install SSL Certificate Chain
-  copy:
-    content: "{{ vault_prettybaked_ssl_certificate }}"
-    dest: "/etc/ssl/certs/wildcard_{{ www_domain }}.pem"
-    owner: root
-    group: ssl-cert
-    mode: 0640
+  with_items: "{{ apache_vhosts_ssl }}"
   notify:
     - restart apache2
 
