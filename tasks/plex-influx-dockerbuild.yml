@@ -1,26 +1,29 @@
 ---
+# Install docker-py for image building
+- name: Install docker-py module for image building
+  pip:
+    name: docker-py
+    state: present
+    
+# Check out plex influx collector source
 - name: Check out Plex InfluxDB Collector Repository
   git:
     repo: 'https://github.com/ajanis/Plex-to-InfluxDB-Extended.git'
     dest: /tmp/plex-influx
+
+# Build docker image    
 - name: Build Plex InfluxDB Collector Image
   docker_image:
      path: /tmp/plex-influx
      name: plex-influx
-- name: Save image to archive
-  docker_image:
-    name: plex-influx
-    archive_path: /tmp/plex-influx.tar
+
+# Create influx collector config file
 - name: Generate Plex InfluxDB config file
   template:
     src: plex-influx-config.ini.j2
     dest: '{{ media_root }}/configs/plex-influxdb-collector/config.ini'
   notify: restart plex-influxdb-collector
-- name: Load docker image
-docker_image:
-  name: plex-influx
-  load_path: /tmp/plex-influx.tar
-notify: restart plex-influxdb-collector
+
 # Import Docker role to create media service containers and startup files
 - name: Set up Docker containers
   import_role:

@@ -21,6 +21,10 @@
         name: nfs
       when: storage_backend == "nfs"
     - import_role:
+        name: mediaserver
+        tasks_from: plex-influx-dockerbuild.yml
+      when: "'plexservers' in group_names"
+    - import_role:
         name: docker
       when: "'mediaservices' in group_names"
     - import_role:
