@@ -17,3 +17,10 @@
   service: 
     name: apache2 
     state: restarted
+    
+- name: restart plex-influxdb-collector
+  systemd:
+    name: docker-plex
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
