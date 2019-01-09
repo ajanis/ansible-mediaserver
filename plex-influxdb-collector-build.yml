@@ -1,63 +1,24 @@
----
-# FOLLOWING OLD PLAYBOOK USED FOR LOCALHOST IMAGE BUILDS
-- name: Build Plex InfluxDB Collector Image
-  hosts: localhost
-  connection: local
-  become: False
+- name: Deploy Plex Media Server; NZB Services, Reverse Proxy, Webserver, File Sharing services
+  hosts:
+    - mediaservices
+    - webservices
+    - fileservices
+  become: True
   tasks:
+#    - import_role:
+#        name: common
+#    - import_role:
+#        name: openldap
+#    - import_role:
+#        name: ceph-fs
+#      when: storage_backend == "cephfs"
+#    - import_role:
+#        name: nfs
+#      when: storage_backend == "nfs"
+    - import_role:
+        name: docker
+        tasks_from: docker-install.yml
     - import_role:
         name: mediaserver
         tasks_from: plex-influx-dockerbuild.yml
-  tasks:
-    - name: Check out Plex InfluxDB Collector Repository
-      git:
-        repo: 'https://github.com/ajanis/Plex-to-InfluxDB-Extended.git'
-        dest: /tmp/plex-influx
-    - name: Build Plex InfluxDB Collector Image
-      docker_image:
-         path: /tmp/plex-influx
-         name: plex-influx
-    - name: Save image to archive
-      docker_image:
-        name: plex-influx
-        archive_path: /tmp/plex-influx.tar
-- name: Generate config and import docker image for Plex InfluxDB Collector
-  hosts: plexservers
-  become: True
-  remote_user: root
-  handlers:
-    - name: restart plex-influxdb-collector
-      systemd:
-        name: docker-plex
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
-  tasks:
-    - name: Generate Plex InfluxDB config file
-      template:
-        src: plex-influx-config.ini.j2
-        dest: '{{ media_root }}/configs/plex-influxdb-collector/config.ini'
-      notify: restart plex-influxdb-collector
-    
-    - name: Copy image to host
-      copy:
-        src: /tmp/plex-influx.tar
-        dest: /tmp/plex-influx.tar
-      notify: restart plex-influxdb-collector
-    
-    - name: Load docker image
-      docker_image:
-        name: plex-influx
-        load_path: /tmp/plex-influx.tar
-      notify: restart plex-influxdb-collector
-
-# Import Docker role to create media service containers and startup files
-    - name: Set up Docker containers
-      import_role:
-        name: docker
-        tasks_from: container-setup
-
-    - name: Create Docker Container Systemd Services
-      import_role:
-        name: docker
-        tasks_from: container-service
+      when: "'plexservers' in group_names"
