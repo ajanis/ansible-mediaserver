@@ -14,8 +14,8 @@
 # Build docker image    
 - name: Build Plex InfluxDB Collector Image
   docker_image:
-     path: /tmp/plex-influx
-     name: plex-influx
+    path: /tmp/plex-influx
+    name: plex-influx
 
 # Create influx collector config file
 - name: Generate Plex InfluxDB config file
