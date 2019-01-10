@@ -7,3 +7,6 @@
 
 - include_tasks: mediaservices.yml
   when: "'mediaservices' in group_names"
+
+- include_tasks: plex-influx.yml
+  when: "'plexservers' in group_names"
