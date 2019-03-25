@@ -1,0 +1,16 @@
+---
+- name: Create ramfs transcode directory
+  file:
+    path: '{{ ramfs_transcode_path }}'
+    state: directory
+    owner: media
+    group: media
+    mode: '{{ ramfs_mode }}'
+
+- name: Create ramdisk for transcode
+  mount:
+    name: '{{ ramfs_transcode_path }}'
+    src: tmpfs
+    fstype: tmpfs
+    state: mounted
+    opts: rw,size=8192m,noexec,nodev,nosuid,gid=2000,uid=2000
