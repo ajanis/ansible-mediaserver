@@ -82,4 +82,5 @@ plex_influx_log_stdout_threshold: 0
 
 
 ramfs_transcode_path: /transcode
-ramfs_mode: 0775
+ramfs_mode: 01777
+ramfs_size_mb: 8192
