@@ -13,4 +13,4 @@
     src: tmpfs
     fstype: tmpfs
     state: mounted
-    opts: rw,size=8192m,noexec,nodev,nosuid,gid=2000,uid=2000
+    opts: "rw,size={{ ramfs_size_mb }}m,noexec,nodev,nosuid,gid={{ ssh_users.media.gid }},uid={{ ssh_users.media.uid }}"
