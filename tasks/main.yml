@@ -8,6 +8,9 @@
 - include_tasks: mediaservices.yml
   when: "'mediaservices' in group_names"
 
+- include_tasks: nzb.yml
+  when: "'nzbservices' in group_names"
+
 - include_tasks: plex.yml
   when: "'plexservers' in group_names"
 
