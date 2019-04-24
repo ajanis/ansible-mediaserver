@@ -1,15 +1,15 @@
 ---
-- name: create {{usenet_incomplete_download_directory}}
+- name: create {{ usenet_incomplete_download_directory }}
   file:
-    path: "{{usenet_incomplete_download_directory}}"
+    path: "{{ usenet_incomplete_download_directory }}"
     state: directory
     mode: 0755
     owner: 2000
     group: 2000
 
-- name: create {{usenet_complete_download_directory}}
+- name: create {{ usenet_complete_download_directory }}
   file:
-    path: "{{usenet_complete_download_directory}}/{{item}}"
+    path: "{{ usenet_complete_download_directory }}/{{ item }}"
     state: directory
     mode: 0755
     owner: 2000

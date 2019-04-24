@@ -1,23 +1,23 @@
 - name: restart avahi-daemon
-  service: 
-    name: avahi-daemon 
+  service:
+    name: avahi-daemon
     state: restarted
 
 - name: restart netatalk
-  service: 
-    name: netatalk 
+  service:
+    name: netatalk
     state: restarted
 
 - name: restart samba
-  service: 
-    name: smbd 
+  service:
+    name: smbd
     state: restarted
 
 - name: restart apache2
-  service: 
-    name: apache2 
+  service:
+    name: apache2
     state: restarted
-    
+
 - name: restart plex-influxdb-collector
   systemd:
     name: docker-plex-influx

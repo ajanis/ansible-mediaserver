@@ -1,10 +1,10 @@
 - name: install mkvtoolnix
-  apt: 
-    name: mkvtoolnix 
-    update_cache: yes 
-    state: latest
-- name: install ffmpeg
-  apt: 
-    name: ffmpeg 
+  apt:
+    name: mkvtoolnix
     update_cache: yes
-    state: latest
+    state: present
+- name: install ffmpeg
+  apt:
+    name: ffmpeg
+    update_cache: yes
+    state: present

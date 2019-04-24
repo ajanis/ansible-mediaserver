@@ -1,60 +1,60 @@
 ---
 - name: install netatalk
-  apt: 
-    name: netatalk 
+  apt:
+    name: netatalk
     update_cache: yes
-    state: latest
+    state: present
 
 - name: install avahi-daemon
-  apt: 
-    name: avahi-daemon 
-    update_cache: yes 
-    state: latest
+  apt:
+    name: avahi-daemon
+    update_cache: yes
+    state: present
 
 - name: install samba server
-  apt: 
-    name: samba 
-    update_cache: yes 
-    state: latest
+  apt:
+    name: samba
+    update_cache: yes
+    state: present
 
 - name: samba defaults
-  copy: 
-    src: smb.conf 
+  copy:
+    src: smb.conf
     dest: /etc/samba/smb.conf
   notify:
     - restart samba
 
 - name: install libnss-mdns
-  apt: 
-    name: libnss-mdns 
-    update_cache: yes 
-    state: latest
+  apt:
+    name: libnss-mdns
+    update_cache: yes
+    state: present
 
 - name: netatalk defaults
-  copy: 
-    src: netatalk 
+  copy:
+    src: netatalk
     dest: /etc/default/netatalk
   notify:
     - restart netatalk
 
 - name: netatalk shares
-  copy: 
-    src: AppleVolumes.default 
+  copy:
+    src: AppleVolumes.default
     dest: /etc/netatalk/AppleVolumes.default
   notify:
     - restart netatalk
 
 - name: nsswitch config
-  lineinfile: 
-    dest: /etc/nsswitch.conf 
-    regexp: '^hosts:' 
+  lineinfile:
+    dest: /etc/nsswitch.conf
+    regexp: '^hosts:'
     line: 'hosts: files mdns4_minimal dns mdns4 mdns'
   notify:
     - restart netatalk
 
 - name: afp model
-  lineinfile: 
-    dest: /etc/netatalk/afpd.conf 
+  lineinfile:
+    dest: /etc/netatalk/afpd.conf
     line: '-mimicmodel Xserve'
   notify:
     - restart netatalk
@@ -67,25 +67,25 @@
     - restart avahi-daemon
     - restart netatalk
   when: afp_ldap_auth | default('False')
-    
+
 - name: afpd service
-  copy: 
-    src: afpd.service 
+  copy:
+    src: afpd.service
     dest: /etc/avahi/services/afpd.service
   notify:
     - restart avahi-daemon
 
 - name: netatalk service
-  service: 
-    name: netatalk 
+  service:
+    name: netatalk
     state: started
 
 - name: avahi-daemon service
-  service: 
-    name: avahi-daemon 
+  service:
+    name: avahi-daemon
     state: started
 
 - name: samba service
-  service: 
-    name: smbd 
+  service:
+    name: smbd
     state: started
