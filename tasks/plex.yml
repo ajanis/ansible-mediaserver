@@ -14,3 +14,4 @@
     fstype: tmpfs
     state: mounted
     opts: "rw,size={{ ramfs_size_mb }}m,noexec,nodev,nosuid,gid={{ ssh_users.media.gid }},uid={{ ssh_users.media.uid }}"
+  when: plex_ramfs_transcode

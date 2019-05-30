@@ -80,7 +80,7 @@ plex_influx_log_file: /var/log/plex-influxdb-collector.log
 plex_influx_censor_logs: True
 plex_influx_log_stdout_threshold: 0
 
-
+plex_ramfs_transcode: False
 ramfs_transcode_path: /transcode
 ramfs_mode: 01777
 ramfs_size_mb: 8192
