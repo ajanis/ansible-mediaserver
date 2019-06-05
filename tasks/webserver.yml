@@ -108,9 +108,17 @@
   notify:
     - restart apache2
 
+- name: Install apache mod_security config
+  copy:
+    src: modsecurity.conf
+    dest: /etc/modsecurity/modsecurity.conf
+    owner: root
+  notify:
+    - restart apache2
+
 - name: default site
   template:
-    src: 000-default.conf
+    src: 000-default.conf.j2
     dest: /etc/apache2/sites-available/000-default.conf
     owner: root
   notify:
@@ -125,7 +133,7 @@
 
 - name: default ssl site
   template:
-    src: 001-default-ssl.conf
+    src: 001-default-ssl.conf.j2
     dest: /etc/apache2/sites-available/001-default-ssl.conf
     owner: root
   notify:
