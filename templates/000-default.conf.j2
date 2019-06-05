@@ -1,4 +1,3 @@
-
 {% for vhost in apache_vhosts %}
 <VirtualHost *:{{ vhost.serverlisten }}>
   ServerName {{ vhost.servername }}
@@ -22,7 +21,9 @@
 {% endif %}
 
 {% if vhost.extra_parameters is defined %}
-  {{ vhost.extra_parameters }}
+{% for line in vhost.extra_parameters[item] %}
+  {{ line }}
+{% endfor %}
 {% endif %}
 
 </VirtualHost>
