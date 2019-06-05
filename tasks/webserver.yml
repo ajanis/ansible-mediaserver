@@ -37,60 +37,107 @@
   notify:
     - restart apache2
 
-- name: install mod_php7.2
+#- name: install mod_php7.2
+#   apt:
+#     name: libapache2-mod-php7.2
+#     update_cache: yes
+#     state: present
+
+- name: install apache modules
   apt:
-    name: libapache2-mod-php7.2
     update_cache: yes
     state: present
+    name:
+      - libapache2-mod-php7.2
+      - libapache2-mod-security2
+      - libapache2-mod-evasive
 
-- name: enable mod_php7.2
+- name: enable apache modules
   apache2_module:
-    name: php7.2
+    name:
+      - php7.2
+      - ssl
+      - rewrite
+      - proxy
+      - proxy_html
+      - proxy_http
+      - status
+      - security2
+      - evasive
+      - headers
     state: present
   notify:
     - restart apache2
 
-- name: enable mod_ssl
-  apache2_module:
-    name: ssl
-    state: present
-  notify:
-    - restart apache2
-
-- name: enable mod_rewrite
-  apache2_module:
-    name: rewrite
-    state: present
-  notify:
-    - restart apache2
-
-- name: enable mod_proxy
-  apache2_module:
-    name: proxy
-    state: present
-  notify:
-    - restart apache2
-
-- name: enable mod_proxy_html
-  apache2_module:
-    name: proxy_html
-    state: present
-  notify:
-    - restart apache2
-
-- name: enable mod_proxy_http
-  apache2_module:
-    name: proxy_http
-    state: present
-  notify:
-    - restart apache2
-
-- name: enable mod_status
-  apache2_module:
-    name: status
-    state: present
-  notify:
-    - restart apache2
+#- name: enable mod_php7.2
+#  apache2_module:
+#    name: php7.2
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_ssl
+#  apache2_module:
+#    name: ssl
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_rewrite
+#  apache2_module:
+#    name: rewrite
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_proxy
+#  apache2_module:
+#    name: proxy
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_proxy_html
+#  apache2_module:
+#    name: proxy_html
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_proxy_http
+#  apache2_module:
+#    name: proxy_http
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_status
+#  apache2_module:
+#    name: status
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_security2
+#  apache2_module:
+#    name: security2
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_evasive
+#  apache2_module:
+#    name: evasive
+#    state: present
+#  notify:
+#    - restart apache2
+#
+#- name: enable mod_headers
+#  apache2_module:
+#    name: headers
+#    state: present
+#  notify:
+#    - restart apache2
 
 - name: add additional listen ports
   blockinfile:
@@ -118,6 +165,14 @@
     path: /etc/apache2/envvars
     regexp: '^exp.*APACHE_RUN_GROUP.*'
     replace: 'export APACHE_RUN_GROUP=media'
+
+- name: Update apache security config
+  template:
+    src: security.conf.j2
+    dest: /etc/apache2/conf-available/security.conf
+    owner: root
+  notify:
+    - restart apache2
 
 - name: default site
   template:
