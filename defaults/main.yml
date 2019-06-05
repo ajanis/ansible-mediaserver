@@ -5,6 +5,24 @@ www_domain: 'example.com'
 www_vhost: '{{ ansible_hostname }}.{{ www_domain }}'
 www_aliases: '{{ www_domain }}'
 www_admin_email: 'admin@example.com'
+www_options: "-Indexes -FollowSymLinks"
+www_allow_override: "None"
+www_servertokens: "Prod"
+www_serversignature: "Off"
+www_traceenable: "Off"
+
+DosWhitelist:
+  - 'localhost'
+  - '127.0.0.1'
+
+www_dos_hash_table_size: 3097
+www_dos_page_count: 2
+www_dos_site_count: 50
+www_dos_page_interval: 1
+www_dos_site_interval: 1
+www_dos_blocking_period: 60
+www_dos_log_dir: "/var/log/apache2/mod_evasive.log"
+
 
 ### FILESERVER CONFIGS
 afp_ldap_auth: False
@@ -32,7 +50,6 @@ nfs_exports:
   public_html:
     nfs_export: "{{ nfs_export_root }}/{{ www_directory }}"
     mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
-
 
 
 ### MEDIA SERVER CONFIGS
