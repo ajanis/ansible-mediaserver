@@ -11,7 +11,7 @@ www_servertokens: "Prod"
 www_serversignature: "Off"
 www_traceenable: "Off"
 
-DosWhitelist:
+www_dos_whitelist:
   - 'localhost'
   - '127.0.0.1'
 
