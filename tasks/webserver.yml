@@ -101,8 +101,8 @@
     - restart apache2
 
 - name: Update mod_evasive config
-  copy:
-    src: evasive.conf
+  template:
+    src: evasive.conf.j2
     dest: /etc/apache2/mods-available/evasive.conf
     owner: root
   notify:
