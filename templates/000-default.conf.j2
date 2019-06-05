@@ -21,9 +21,7 @@
 {% endif %}
 
 {% if vhost.extra_parameters is defined %}
-{% for line in vhost.extra_parameters[item] %}
-  {{ line }}
-{% endfor %}
+{{ vhost.extra_parameters }}
 {% endif %}
 
 </VirtualHost>
