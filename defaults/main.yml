@@ -1,10 +1,78 @@
 ---
+### STORAGE CONFIGS
+
+# currently cephfs and nfs storage backends supported
+#storage_backend: "cephfs"
+storage_backend: "nfs"
+
+data_mount_root: "/data"
+configs_directory: "configs"
+media_directory: "media"
+git_directory: "git"
+www_directory: "public_html"
+
+
+### MEDIA SERVER CONFIGS
+# Plex Server
+plex_server_ip:
+plex_username:
+plex_password:
+plex_token:
+
+media_root: '{{ data_mount_root }}'
+usenet_incomplete_download_directory: '/downloads/usenet/incomplete'
+usenet_complete_download_directory: '/downloads/usenet/complete'
+usenet_watch_directory: '/downloads/usenet/watch'
+
+plex_ramfs_transcode: False
+ramfs_transcode_path: /transcode
+ramfs_mode: 01777
+ramfs_size_mb: 8192
+
+apache_vhosts:
+  - servername: "webservices.{{ www_domain }}"
+    serveralias: webservices
+    serverlisten: 80
+    extra_parameters: |
+      <Location /server-status>
+        SetHandler server-status
+        Require ip 127.0.0.1
+        Require host {{ www_domain }}" localhost
+      </Location>
+
+  - servername: "plex.{{ www_domain }}"
+    serverlisten: 80
+    extra_parameters: |
+      SecRuleEngine Off
+      ProxyPreserveHost on
+      ProxyPass / http://192.168.1.100:32400/ connectiontimeout=60 timeout=60 retry=5 keepalive=On disablereuse=On
+      ProxyPassReverse / http://192.168.1.100:32400/
+
+apache_vhosts_ssl:
+  - servername: "plex.{{ www_domain }}"
+    serverlisten: 443
+    sslcertcontent: '{{ vault_majormisanthropy_ssl_certificate }}'
+    sslkeycontent: '{{ vault_majormisanthropy_ssl_private_key }}'
+    sslcertfile: "/etc/ssl/certs/majormisanthropy.com.pem"
+    sslkeyfile: "/etc/ssl/private/majormisanthropy.com.key"
+    extra_parameters: |
+      SecRuleEngine Off
+      ProxyPreserveHost on
+      ProxyPass / http://192.168.1.100:32400/ connectiontimeout=60 timeout=60 retry=5 keepalive=On disablereuse=On
+      ProxyPassReverse / http://192.168.1.100:32400/
+
+
+plex_ramfs_transcode: False
+ramfs_transcode_path: /transcode
+ramfs_mode: 01777
+ramfs_size_mb: 8192
+
 
 ### WEBSERVER CONFIGS
-www_domain: 'example.com'
+www_domain: 'home.example.com'
 www_vhost: '{{ ansible_hostname }}.{{ www_domain }}'
 www_aliases: '{{ www_domain }}'
-www_admin_email: 'admin@example.com'
+www_admin_email: 'admin@{{ www_domain }}'
 www_options: "-Indexes -FollowSymLinks"
 www_allow_override: "None"
 www_servertokens: "Prod"
@@ -26,78 +94,3 @@ www_dos_log_dir: "/var/log/apache2/mod_evasive.log"
 
 ### FILESERVER CONFIGS
 afp_ldap_auth: False
-
-### STORAGE CONFIGS
-
-# currently cephfs and nfs storage backends supported
-#storage_backend: "cephfs"
-storage_backend: "nfs"
-
-data_mount_root: "/data"
-media_directory: "media"
-www_directory: "public_html"
-backup_directory: "backups"
-ldap_user_home_directory: "homedirs"
-
-
-### NFS EXPORTS CONFIGS
-nfs_export_root: "/exports"
-
-nfs_exports:
-  media:
-    nfs_export: "{{ nfs_export_root }}/{{ media_directory }}"
-    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
-  public_html:
-    nfs_export: "{{ nfs_export_root }}/{{ www_directory }}"
-    mount_opts: "*(rw,sync,no_root_squash,no_subtree_check)"
-
-
-### MEDIA SERVER CONFIGS
-
-usenet_incomplete_download_directory: 'downloads/usenet/incomplete'
-usenet_complete_download_directory: 'downloads/usenet/complete'
-usenet_watch_directory: 'downloads/usenet/watch'
-
-
-apache_vhosts:
-  - servername: "plex.{{ wwww_domain }}"
-    serveralias: "{{ www_aliases }}"
-    extra_parameters: |
-      ProxyPreserveHost on
-      ProxyPass / http://127.0.0.1:32400/ connectiontimeout=30 timeout=30 retry=0 keepalive=On disablereuse=On
-      ProxyPassReverse / http://127.0.0.1:32400/
-
-apache_vhosts_ssl:
-
-  - servername: "plex.{{ www_domain }}"
-    serveralias: "{{ www_aliases }}"
-    sslcertfile: "/etc/ssl/certs/{{ www_domain }}.pem"
-    sslkeyfile: "/etc/ssl/private/{{ www_domain }}.key"
-    extra_parameters: |
-      ProxyPreserveHost on
-      ProxyPass / http://127.0.0.1:32400/ connectiontimeout=30 timeout=30 retry=0 keepalive=On disablereuse=On
-      ProxyPassReverse / http://127.0.0.1:32400/
-
-
-plex_influx_delay: 2
-plex_influx_library_delay: 1800
-plex_influx_output: True
-influxdb_server_ip: localhost
-influxdb_server_port: 8086
-influxdb_plex_database: plex
-influxdb_server_username: ""
-influxdb_server_password: ""
-influxdb_verify_ssl:  False
-plex_username: ""
-plex_password: ""
-plex_server_ip: localhost
-plex_influx_logging: True
-plex_influx_log_level: Info
-plex_influx_log_file: /var/log/plex-influxdb-collector.log 
-plex_influx_censor_logs: True
-plex_influx_log_stdout_threshold: 0
-
-plex_ramfs_transcode: False
-ramfs_transcode_path: /transcode
-ramfs_mode: 01777
-ramfs_size_mb: 8192
