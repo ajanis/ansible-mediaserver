@@ -3,27 +3,34 @@
 # Apache webserver (vhosts + reverse proxy configs for media services); Samba and Apple File Protocol file sharing services
 # Optionally deploy with NFS or CephFS storage backends (requires openldap role)
 
-- name: Deploy Plex Media Server; NZB Services, Reverse Proxy, Webserver, File Sharing services
+- name: "[Media Server] :: Deploy Plex Media Server, NZB Services (SabNZBd, Sonarr, Radarr, Ombi) Monitoring Services (Tautulli, Telegraf), Web Services (Apache), File Services (Samba,AFP,Avahi) :: Includes Ansible roles for OpenLDAP-Client, CephFS/NFS"
   hosts:
     - mediaservices
     - webservices
     - fileservices
   become: True
   tasks:
-    - import_role:
+    - include_role:
         name: common
-    - import_role:
+    - include_role:
         name: openldap
-    - import_role:
+        public: True
+      when:  openldap_server_ip is defined and openldap_server_ip != None
+    - include_role:
         name: ceph-fs
-      when: storage_backend == "cephfs"
-    - import_role:
+      when:
+        - shared_storage
+        - storage_backend == "cephfs"
+    - include_role:
         name: nfs
-      when: storage_backend == "nfs"
-    - import_role:
+      when:
+        - shared_storage
+        - storage_backend == "nfs"
+    - include_role:
         name: mediaserver
-    - import_role:
+    - include_role:
         name: docker
       when: "'mediaservices' in group_names"
-    - import_role:
+    - include_role:
         name: telegraf
+      when: "'telegraf' in group_names"
