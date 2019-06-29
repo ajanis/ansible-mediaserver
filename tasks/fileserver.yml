@@ -47,7 +47,7 @@
 - name: nsswitch config
   lineinfile:
     dest: /etc/nsswitch.conf
-    regexp: '^hosts:'
+    regexp: '^hosts:.*'
     line: 'hosts: files mdns4_minimal dns mdns4 mdns'
   notify:
     - restart netatalk
