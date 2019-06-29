@@ -62,12 +62,6 @@ apache_vhosts_ssl:
       ProxyPassReverse / http://192.168.1.100:32400/
 
 
-plex_ramfs_transcode: False
-ramfs_transcode_path: /transcode
-ramfs_mode: 01777
-ramfs_size_mb: 8192
-
-
 ### WEBSERVER CONFIGS
 www_domain: 'home.example.com'
 www_vhost: '{{ ansible_hostname }}.{{ www_domain }}'
