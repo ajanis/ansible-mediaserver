@@ -1,15 +1,15 @@
 ---
 - name: Create ramfs transcode directory
   file:
-    path: '{{ ramfs_transcode_path }}'
+    path: "{{ ramfs_transcode_path }}"
     state: directory
     owner: media
     group: media
-    mode: '{{ ramfs_mode }}'
+    mode: "{{ ramfs_mode }}"
 
 - name: Create ramdisk for transcode
   mount:
-    name: '{{ ramfs_transcode_path }}'
+    name: "{{ ramfs_transcode_path }}"
     src: tmpfs
     fstype: tmpfs
     state: mounted
