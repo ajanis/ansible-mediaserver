@@ -1,19 +1,7 @@
 ---
-- name: install netatalk
+- name: install fileserver packages
   apt:
-    name: netatalk
-    update_cache: yes
-    state: present
-
-- name: install avahi-daemon
-  apt:
-    name: avahi-daemon
-    update_cache: yes
-    state: present
-
-- name: install samba server
-  apt:
-    name: samba
+    name: "{{ fileserver_pkgs }}"
     update_cache: yes
     state: present
 
@@ -23,12 +11,6 @@
     dest: /etc/samba/smb.conf
   notify:
     - restart samba
-
-- name: install libnss-mdns
-  apt:
-    name: libnss-mdns
-    update_cache: yes
-    state: present
 
 - name: netatalk defaults
   copy:

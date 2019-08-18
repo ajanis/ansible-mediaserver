@@ -1,10 +1,6 @@
-- name: install mkvtoolnix
+---
+- name: install mediaservice packages
   apt:
-    name: mkvtoolnix
-    update_cache: yes
-    state: present
-- name: install ffmpeg
-  apt:
-    name: ffmpeg
+    name: "{{ mediaservice_pkgs }}"
     update_cache: yes
     state: present
