@@ -15,7 +15,8 @@ usenet_incomplete_download_directory: "/downloads/usenet/incomplete"
 usenet_complete_download_directory: "/downloads/usenet/complete"
 usenet_watch_directory: "/downloads/usenet/watch"
 media_root: "{{ data_mount_root }}"
-
+media_user_uid:
+media_user_gid:
 
 # Plex Server Configs
 plex_server_ip:
