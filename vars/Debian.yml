@@ -1,10 +1,4 @@
 ---
-fileserver_pkgs:
-  - netatalk
-  - avahi-daemon
-  - samba
-  - libnss-mdns
-
 mediaservice_pkgs:
   - sqlite3
   - unzip
