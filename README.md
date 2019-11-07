@@ -1,20 +1,5 @@
 # Ansible-Foreman
 
-<!-- MarkdownTOC -->
-
-- Dependencies
-- Additional Deployment Options / Requirements
-- Role Variables
-  - defaults/main.yml
-  - vars/debian.yml
-- Example Group Variables for Supporting Roles
-- Example Playbook
-- License
-- Author Information
-
-<!-- /MarkdownTOC -->
-
-
 **This role is part of the [Ansible-Mediaserver Project][]**
 
 Deploy a full media-server / media-services environment with download agents, library metrics and media request service.
@@ -30,8 +15,141 @@ Deploy a full media-server / media-services environment with download agents, li
 
 [Ansible-Docker][] role is needed to set up media services
 
+## Requirements
+### Docker Role variables for media server / service containers
+```
+docker_containers:
+  plex:
+    description: "Plex Media Server"
+    image: plexinc/pms-docker:plexpass
+    network_mode: host
+    ports: []
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/plex:/config'
+      - '{{ media_root }}/ssl:/ssl'
+      - '{{ media_root }}/tv:/tvshows'
+      - '{{ media_root }}/movies:/movies'
+      - '{{ media_root }}/images:/photos'
+      - '/transcode:/transcode'
+    env:
+      TZ: '{{ timezone }}'
+      PLEX_UID: '{{ media_user_uid }}'
+      PLEX_GID: '{{ media_user_gid }}'
+      ALLOWED_NETWORKS: '10.0.0.0/8,172.16.0.0/16,192.168.0.0/16'
+      CHANGE_CONFIG_DIR_OWNERSHIP: 'false'
+  tautulli:
+    description: "Tautulli - Plex Media Server Usage Metrics"
+    image: tautulli/tautulli
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 8181:8181
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/tautulli:/config'
+      - '{{ media_root }}/configs/plex/Library/Application Support/Plex Media Server/Logs:/plex_logs:ro'
+    env:
+      TZ: '{{ timezone }}'
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      ADVANCED_GIT_BRANCH: 'nightly'
+  varken:
+    description: "Varken Metrics Collector"
+    image: boerderij/varken:develop
+    network_mode: host
+    pull: yes
+    volumes:
+      - '{{ media_root }}/configs/varken:/config'
+    env:
+      TZ: '{{ timezone }}'
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
 
-## Additional Deployment Options / Requirements
+  sabnzbd:
+    description: "NZB Download Service"
+    image: linuxserver/sabnzbd
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 8181:8080
+      - 9090:9090
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/sabnzbd:/config'
+      - '{{ usenet_incomplete_download_directory}}:/incomplete-downloads'
+      - '{{ usenet_complete_download_directory}}:/downloads'
+      - '{{ usenet_watch_directory}}:/watch'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+  sonarr:
+    description: "NZB Search Engine and Library Manager for TV Shows"
+    image: linuxserver/sonarr:preview
+    network_mode: bridge
+    ports:
+      - 8180:8989
+    pull: yes
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/dev/rtc:/dev/rtc:ro'
+      - '{{ media_root }}/configs/sonarr:/config'
+      - '{{ usenet_complete_download_directory}}:/downloads'
+      - '{{ media_root }}/tv:/tv'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  radarr:
+    description: "NZB Search Engine and Library Manager for Movies"
+    image: linuxserver/radarr
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 8183:7878
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/radarr:/config'
+      - '{{ usenet_complete_download_directory}}/:/downloads'
+      - '{{ media_root }}/movies:/movies'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  ombi:
+    description: "User Requests for Media Server"
+    image: linuxserver/ombi
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 3579:3579
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/dev/rtc:/dev/rtc:ro'
+      - '{{ media_root }}/configs/ombi:/config'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  bazarr:
+    description: "Subtitle Companion App for Sonarr/Radarr"
+    image: linuxserver/bazarr
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 6767:6767
+    volumes:
+      - '{{ media_root }}/configs/bazarr:/config'
+      - '{{ media_root }}/tv:/tv'
+      - '{{ media_root }}/movies:/movies'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+
+```
+
+### Additional Deployment Option Requirements
 
 **The following additional services can be configured with the appropriate Ansible roles**
 
@@ -921,10 +1039,12 @@ MIT
 
 Created by Alan Janis
 
-[Ansible Foreman Modules]: https://github.com/theforeman/foreman-ansible-modules
-[Ansible Docker Role]: https://github.com/ajanis/ansible-docker.git
-[foreman-yml]: https://pypi.org/project/foreman-yml
-[ansible tftp role]:  https://github.com/ajanis/ansible-tftp.git
-[ansible nginx role]:  https://github.com/ajanis/ansible-nginx.git
-[itc automated build pods project]:  https://github.com/ajanis/itc-build-pods.git
-[ansible isc dhcp server role]:  https://github.com/ajanis/ansible-isc-dhcp-server.git
+[ansible-openldap]: https://github.com/ajanis/ansible-openldap.git
+[ansible-telegraf]: https://github.com/ajanis/ansible-telegraf.git
+[ansible-nfs]: https://github.com/ajanis/ansible-nfs.git
+[ansible-ceph-fs]: https://github.com/ajanis/ansible-cephfs.git
+[ansible-nginx]: https://github.com/ajanis/ansible-nginx.git
+[ansible-docker]: https://github.com/ajanis/ansible-docker.git
+[ansible-grafana]: https://github.com/ajanis/ansible-grafana.git
+[ansible-mediaserver project]: https://github.com/ajanis/ansible-mediaserver-project.git
+[ansible-influxdb]: https://github.com/ajanis/ansible-influxdb.git
