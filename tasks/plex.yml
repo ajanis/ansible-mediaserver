@@ -3,8 +3,8 @@
   file:
     path: "{{ ramfs_transcode_path }}"
     state: directory
-    owner: media
-    group: media
+    owner: "{{ media_user_uid }}"
+    group: "{{ media_user_gid }}"
     mode: "{{ ramfs_mode }}"
 
 - name: Create ramdisk for transcode
@@ -13,5 +13,5 @@
     src: tmpfs
     fstype: tmpfs
     state: mounted
-    opts: "rw,size={{ ramfs_size_mb }}m,noexec,nodev,nosuid,gid={{ ssh_users.media.gid }},uid={{ ssh_users.media.uid }}"
+    opts: "rw,size={{ ramfs_size_mb }}m,noexec,nodev,nosuid,gid={{ media_user_gid }},uid={{ media_user_uid }}"
   when: plex_ramfs_transcode

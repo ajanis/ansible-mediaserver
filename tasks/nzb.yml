@@ -4,16 +4,16 @@
     path: "{{ usenet_incomplete_download_directory }}"
     state: directory
     mode: 0755
-    owner: "2000"
-    group: "2000"
+    owner: "{{ media_user_uid }}"
+    group: "{{ media_user_gid }}"
 
 - name: create {{ usenet_complete_download_directory }}
   file:
     path: "{{ usenet_complete_download_directory }}/{{ item }}"
     state: directory
     mode: 0755
-    owner: "2000"
-    group: "2000"
+    owner: "{{ media_user_uid }}"
+    group: "{{ media_user_gid }}"
   with_items:
     - tv
     - movies
