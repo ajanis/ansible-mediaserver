@@ -15,6 +15,11 @@ Deploy a full media-server / media-services environment with download agents, li
 
 [Ansible-Docker][] role is needed to set up media services
 
+The following ansible groups must be defined:
+ - mediaservices
+    - plexservers
+    - nzbservices
+
 ## Requirements
 ### Docker Role variables for media server / service containers
 ```
@@ -1022,6 +1027,7 @@ nginx_vhosts_ssl:
         name: common
     - include_role:
         name: mediaserver
+      when: "'mediaservices' in group_names"
     - include_role:
         name: docker
       when: "'mediaservices' in group_names"
