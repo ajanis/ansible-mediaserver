@@ -1,0 +1,557 @@
+timezone: "America/Denver"
+
+# currently cephfs and nfs storage backends supported
+shared_storage: False
+
+### STORAGE DIRECTORY CONFIG
+data_mount_root: "/data"
+media_directory: "media"
+www_directory: "public_html"
+configs_directory: "configs"
+
+ssl_privkey: "{{ vault_prettybaked.com_ssl_private_key }}"
+ssl_keypath: "/etc/ssl/private/{{ www_domain }}.key"
+ssl_certchain: "{{ vault_prettybaked.com_ssl_certificate }}"
+ssl_certpath: "/etc/ssl/certs/{{ www_domain }}.crt"
+
+### MEDIA SERVER CONFIGS
+media_root: "{{ data_mount_root }}/{{ media_directory }}"
+
+plex_ramfs_transcode: True
+ramfs_transcode_path: /transcode
+ramfs_size_mb: 8192
+plex_server_ip: 10.0.10.106
+plex_username: devicenull
+plex_password: "{{ vault_plex_password }}"
+plex_token: "{{ vault_plex_token }}"
+
+
+## SSH CONFIGS
+
+sshd_permit_root_login: 'yes'
+
+
+### WEB SERVER CONFIGS
+www_domain: 'prettybaked.com'
+
+
+fail2ban_enable: False
+
+nginx_proxy_cache_regex: '~* (^/(photo|media|image|images|mediacover|pms_image_proxy)|\.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc|css|js)$)'
+
+nginx_backends:
+
+
+  - service: sabnzbd
+    servers:
+      - 10.0.10.106:8181
+
+  - service: ombi
+    servers:
+      - 10.0.10.106:3579
+
+  - service: sonarr
+    servers:
+      - 10.0.10.106:8180
+
+  - service: radarr
+    servers:
+      - 10.0.10.106:8183
+
+  - service: tautulli
+    servers:
+      - 10.0.10.175:8181
+
+  - service: bazarr
+    servers:
+      - 10.0.10.106:6767
+
+  - service: plex
+    servers:
+      - 10.0.10.106:32400
+
+nginx_vhosts:
+  - servername: "home.{{ www_domain }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_eth0.ipv4.address }}"
+    serverlisten: "80 default_server"
+    locations:
+      - name: /
+        docroot: "{{ data_mount_root }}/{{ www_directory }}"
+        extra_parameters: |
+          fancyindex on;
+          fancyindex_localtime on; #on for local time zone. off for GMT
+          fancyindex_exact_size off; #off for human-readable. on for exact size in bytes
+          fancyindex_header "/fancyindex/header.html";
+          fancyindex_footer "/fancyindex/footer.html";
+          fancyindex_ignore "fancyindex"; #ignore this directory when showing list
+          fancyindex_ignore "iot_firewall_allow.txt";
+          fancyindex_ignore "fail2ban.txt";
+          fancyindex_ignore "robots.txt";
+
+
+  - servername: "sabnzbd.home.{{ www_domain }}"
+    serveralias: sabnzbd
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        backend: sabnzbd
+        custom_css: sabnzbd_dark.css
+
+  - servername: "sonarr.home.{{ www_domain }}"
+    serveralias: sonarr
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: sonarr
+        custom_css: sonarr/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: sonarr
+
+
+  - servername: "radarr.home.{{ www_domain }}"
+    serveralias: radarr
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        backend: radarr
+        proxy_cache: True
+        custom_css: radarr/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: radarr
+
+  - servername: "bazarr.home.{{ www_domain }}"
+    serveralias: bazarr
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        backend: bazarr
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        backend: bazarr
+        proxy_cache: True
+
+  - servername: "ombi.home.{{ www_domain }}"
+    serveralias: ombi
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        backend: ombi
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: ombi
+
+  - servername: "tautulli.home.{{ www_domain }}"
+    serveralias: tautulli
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        backend: tautulli
+        proxy_cache: True
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: tautulli
+
+  - servername: "plex.home.{{ www_domain }}"
+    serveralias: plex
+    serverlisten: 80
+    locations:
+      - name: /
+        proxy: True
+        backend: plex
+        custom_css: plex/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: plex
+
+
+  - servername: "home.{{ www_domain }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_eth0.ipv4.address }}"
+    serverlisten: "8080 default_server"
+    locations:
+      - name: /
+        docroot: "{{ data_mount_root }}/{{ www_directory }}"
+        extra_parameters: |
+          fancyindex on;
+          fancyindex_localtime on; #on for local time zone. off for GMT
+          fancyindex_exact_size off; #off for human-readable. on for exact size in bytes
+          fancyindex_header "/fancyindex/header.html";
+          fancyindex_footer "/fancyindex/footer.html";
+          fancyindex_ignore "fancyindex"; #ignore this directory when showing list
+          fancyindex_ignore "iot_firewall_allow.txt";
+          fancyindex_ignore "fail2ban.txt";
+          fancyindex_ignore "robots.txt";
+
+
+  - servername: "ombi.{{ www_domain }}"
+    serveralias: ombi
+    serverlisten: 8080
+    locations:
+      - name: /
+        proxy: True
+        backend: ombi
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: ombi
+
+  - servername: "tautulli.{{ www_domain }}"
+    serveralias: tautulli
+    serverlisten: 8080
+    locations:
+      - name: /
+        proxy: True
+        backend: tautulli
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: tautulli
+
+  - servername: "plex.{{ www_domain }}"
+    serveralias: plex
+    serverlisten: 8080
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: plex
+        custom_css: plex/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: plex
+
+
+nginx_vhosts_ssl:
+  - servername: "home.{{ www_domain }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }}"
+    serverlisten: "443 default_server"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        docroot: "{{ data_mount_root }}/{{ www_directory }}"
+        extra_parameters: |
+          fancyindex on;
+          fancyindex_localtime on; #on for local time zone. off for GMT
+          fancyindex_exact_size off; #off for human-readable. on for exact size in bytes
+          fancyindex_header "/fancyindex/header.html";
+          fancyindex_footer "/fancyindex/footer.html";
+          fancyindex_ignore "fancyindex"; #ignore this directory when showing list
+          fancyindex_ignore "iot_firewall_allow.txt";
+          fancyindex_ignore "fail2ban.txt";
+          fancyindex_ignore "robots.txt";
+
+
+  - servername: "sabnzbd.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        backend: sabnzbd
+        custom_css: sabnzbd_dark.css
+
+  - servername: "sonarr.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: sonarr
+        custom_css: sonarr/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: sonarr
+
+
+  - servername: "radarr.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: radarr
+        custom_css: radarr/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: radarr
+
+  - servername: "bazarr.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        backend: bazarr
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        backend: bazarr
+        proxy_cache: True
+
+  - servername: "ombi.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        backend: ombi
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: ombi
+
+  - servername: "tautulli.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: tautulli
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: tautulli
+
+  - servername: "plex.home.{{ www_domain }}"
+    serverlisten: "443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: plex
+        custom_css: plex/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: plex
+
+
+
+  - servername: "home.{{ www_domain }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_eth0.ipv4.address }}"
+    serverlisten: "8443 default_server"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        docroot: "{{ data_mount_root }}/{{ www_directory }}"
+        extra_parameters: |
+          fancyindex on;
+          fancyindex_localtime on; #on for local time zone. off for GMT
+          fancyindex_exact_size off; #off for human-readable. on for exact size in bytes
+          fancyindex_header "/fancyindex/header.html";
+          fancyindex_footer "/fancyindex/footer.html";
+          fancyindex_ignore "fancyindex"; #ignore this directory when showing list
+          fancyindex_ignore "iot_firewall_allow.txt";
+          fancyindex_ignore "fail2ban.txt";
+          fancyindex_ignore "robots.txt";
+
+  - servername: "ombi.{{ www_domain }}"
+    serverlisten: "8443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        backend: ombi
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: ombi
+
+  - servername: "tautulli.{{ www_domain }}"
+    serverlisten: "8443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: tautulli
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: tautulli
+
+  - servername: "plex.{{ www_domain }}"
+    serverlisten: "8443"
+    ssl_certchain: "{{ ssl_certchain }}"
+    ssl_privkey: "{{ ssl_privkey }}"
+    ssl_certpath: "{{ ssl_certpath }}"
+    ssl_keypath: "{{ ssl_keypath }}"
+    locations:
+      - name: /
+        proxy: True
+        proxy_cache: True
+        backend: plex
+        custom_css: plex/dark.css
+      - name: "{{ nginx_proxy_cache_regex }}"
+        proxy: True
+        proxy_cache: True
+        backend: plex
+
+docker_containers:
+  sabnzbd:
+    description: "NZB Download Service"
+    image: linuxserver/sabnzbd
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 8181:8080
+      - 9090:9090
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/sabnzbd:/config'
+      - '{{ usenet_incomplete_download_directory}}:/incomplete-downloads'
+      - '{{ usenet_complete_download_directory}}:/downloads'
+      - '{{ usenet_watch_directory}}:/watch'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+  sonarr:
+    description: "NZB Search Engine and Library Manager for TV Shows"
+    image: linuxserver/sonarr:preview
+    network_mode: bridge
+    ports:
+      - 8180:8989
+    pull: yes
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/dev/rtc:/dev/rtc:ro'
+      - '{{ media_root }}/configs/sonarr:/config'
+      - '{{ usenet_complete_download_directory}}:/downloads'
+      - '{{ media_root }}/tv:/tv'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  radarr:
+    description: "NZB Search Engine and Library Manager for Movies"
+    image: linuxserver/radarr
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 8183:7878
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/radarr:/config'
+      - '{{ usenet_complete_download_directory}}/:/downloads'
+      - '{{ media_root }}/movies:/movies'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  ombi:
+    description: "User Requests for Media Server"
+    image: linuxserver/ombi
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 3579:3579
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '/dev/rtc:/dev/rtc:ro'
+      - '{{ media_root }}/configs/ombi:/config'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  bazarr:
+    description: "Subtitle Companion App for Sonarr/Radarr"
+    image: linuxserver/bazarr
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 6767:6767
+    volumes:
+      - '{{ media_root }}/configs/bazarr:/config'
+      - '{{ media_root }}/tv:/tv'
+      - '{{ media_root }}/movies:/movies'
+    env:
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      TZ: '{{ timezone }}'
+  plex:
+    description: "Plex Media Server"
+    image: plexinc/pms-docker:plexpass
+    network_mode: host
+    ports: []
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/plex:/config'
+      - '{{ media_root }}/ssl:/ssl'
+      - '{{ media_root }}/tv:/tvshows'
+      - '{{ media_root }}/movies:/movies'
+      - '{{ media_root }}/images:/photos'
+      - '/transcode:/transcode'
+    env:
+      TZ: '{{ timezone }}'
+      PLEX_UID: '{{ media_user_uid }}'
+      PLEX_GID: '{{ media_user_gid }}'
+      ALLOWED_NETWORKS: '10.0.0.0/8,172.16.0.0/16,192.168.0.0/16'
+      CHANGE_CONFIG_DIR_OWNERSHIP: 'false'
+  tautulli:
+    description: "Tautulli - Plex Media Server Usage Metrics"
+    image: tautulli/tautulli
+    network_mode: bridge
+    pull: yes
+    ports:
+      - 8181:8181
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - '{{ media_root }}/configs/tautulli:/config'
+      - '{{ media_root }}/configs/plex/Library/Application Support/Plex Media Server/Logs:/plex_logs:ro'
+    env:
+      TZ: '{{ timezone }}'
+      PUID: '{{ media_user_uid }}'
+      PGID: '{{ media_user_gid }}'
+      ADVANCED_GIT_BRANCH: 'nightly'
