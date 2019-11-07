@@ -5,9 +5,6 @@
     - "{{ ansible_distribution }}{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_os_family }}.yml"
 
-#- include_tasks: fileserver.yml
-#  when: "'fileservices' in group_names"
-
 - include_tasks: mediaservices.yml
   when: "'mediaservices' in group_names"
 
