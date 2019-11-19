@@ -5,11 +5,11 @@
     - "{{ ansible_distribution }}{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_os_family }}.yml"
 
-- include_tasks: mediaservices.yml
+- import_tasks: mediaservices.yml
   when: "'mediaservices' in group_names"
 
-- include_tasks: nzb.yml
+- import_tasks: nzb.yml
   when: "'nzbservices' in group_names"
 
-- include_tasks: plex.yml
+- import_tasks: plex.yml
   when: "'plexservers' in group_names"
