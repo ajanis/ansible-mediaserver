@@ -10,27 +10,30 @@
     - fileservices
   become: True
   tasks:
-    - include_role:
+    - import_role:
         name: common
-    - include_role:
+    - import_role:
         name: openldap
-        public: True
       when:  openldap_server_ip is defined and openldap_server_ip != None
-    - include_role:
+    - import_role:
         name: ceph-fs
       when:
         - shared_storage
         - storage_backend == "cephfs"
-    - include_role:
+    - import_role:
         name: nfs
       when:
         - shared_storage
         - storage_backend == "nfs"
-    - include_role:
+    - import_role:
         name: mediaserver
-    - include_role:
+      when: "'mediaservices' in group_names"
+    - import_role:
         name: docker
       when: "'mediaservices' in group_names"
-    - include_role:
+    - import_role:
+        name: nginx
+      when: "'webservices' in group_names"
+    - import_role:
         name: telegraf
       when: "'telegraf' in group_names"
