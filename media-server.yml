@@ -8,7 +8,9 @@
     - mediaservices
     - webservices
     - fileservices
-  become: True
+  remote_user: root
+  gather_facts: yes
+
   tasks:
     - import_role:
         name: common
@@ -20,11 +22,6 @@
       when:
         - shared_storage
         - storage_backend == "cephfs"
-    - import_role:
-        name: nfs
-      when:
-        - shared_storage
-        - storage_backend == "nfs"
     - import_role:
         name: mediaserver
       when: "'mediaservices' in group_names"
