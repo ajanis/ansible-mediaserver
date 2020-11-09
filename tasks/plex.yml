@@ -1,17 +1,17 @@
 ---
-- name: Create ramfs transcode directory
+- name: Create transcode directory
   file:
-    path: "{{ ramfs_transcode_path }}"
+    path: "{{ plex_transcode_disk_mnt }}"
     state: directory
     owner: "{{ media_user_uid }}"
     group: "{{ media_user_gid }}"
-    mode: "{{ ramfs_mode }}"
+    mode: "{{ plex_transcode_disk_mode }}"
 
-- name: Create ramdisk for transcode
+- name: Create mount for transcode disk
   mount:
-    name: "{{ ramfs_transcode_path }}"
-    src: tmpfs
-    fstype: tmpfs
+    name: "{{ plex_transcode_disk_mnt }}"
+    src: "{{ plex_transcode_disk_source }}"
+    fstype: "{{ plex_transcode_disk_fstype }}"
     state: mounted
-    opts: "rw,size={{ ramfs_size_mb }}m,noexec,nodev,nosuid,gid={{ media_user_gid }},uid={{ media_user_uid }}"
-  when: plex_ramfs_transcode
+    opts: "{{ plex_transcode_disk_mnt_opts }}"
+  when: plex_transcode_disk

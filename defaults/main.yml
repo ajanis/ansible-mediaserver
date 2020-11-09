@@ -23,10 +23,13 @@ plex_server_ip:
 plex_username:
 plex_password:
 plex_token:
-plex_ramfs_transcode: False
-ramfs_transcode_path: /transcode
-ramfs_mode: 01777
-ramfs_size_mb: 8192
+plex_transcode_disk: False
+plex_transcode_disk_mnt: /transcode
+plex_transcode_disk_mnt_opts: ssd,discard,noatime
+plex_transcode_disk_dev: /dev/sdb
+plex_transcode_disk_size_mb: 32768
+plex_transcode_disk_fstype: btrfs
+plex_transcode_disk_mode: 0774
 
 ### FILESERVER CONFIGS
 afp_ldap_auth: False
