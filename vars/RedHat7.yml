@@ -1,0 +1,40 @@
+---
+mediaservice_pkgs:
+  - sqlite3
+  - unzip
+  - mkvtoolnix
+  - ffmpeg
+
+nvidia_driver_dependencies:
+  - gcc
+  - binutils
+  - make
+  - curl
+  - kernel-headers
+  - kernel-devel
+  - gnupg-agent
+  - epel-release
+  - dkms
+  - tar
+  - bzip2
+  - automake
+  - gcc-c++
+  - pciutils
+  - elfutils-libelf-devel
+  - libglvnd-devel
+  - iptables
+  - firewalld
+  - vim
+  - bind-utils
+  - wget
+
+nvidia_driver_packages:
+  - nvidia-driver-latest-dkms
+  - cuda
+  - cuda_drivers
+  - "kernel-headers-{{ ansible_kernel }}"
+  - "kernel-devel-{{ ansible_kernel }}"
+
+nvidia_docker_packages:
+  - nvidia-container-toolkit
+  - nvidia-docker2

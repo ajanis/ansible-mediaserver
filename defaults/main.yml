@@ -33,3 +33,4 @@ plex_transcode_disk_mode: 0774
 
 ### FILESERVER CONFIGS
 afp_ldap_auth: False
+epel_rpm: https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_version }}.noarch.rpm

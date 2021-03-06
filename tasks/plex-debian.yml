@@ -1,0 +1,86 @@
+---
+- name: Blacklist nouveau kernel module when cuda cards are present
+  copy:
+    dest: /etc/modprobe.d/blacklist-nouveau.conf
+    content: |
+      blacklist nouveau
+      options nouveau modset=0
+    mode: 0644
+  notify: initramfs requires update
+  register: blacklist_nouveau
+
+- meta: flush_handlers
+
+- name: update initramfs
+  shell:
+    cmd: update-initramfs -u
+  register: initramfs_update_result
+  when:
+    - initramfs_requires_update|default(False)
+
+
+- name: Reboot after initramfs update and nouveau module blacklist
+  reboot:
+    connect_timeout: 10
+    reboot_timeout: 600
+    msg: Rebooting system via Ansible
+  when:
+    - initramfs_update_result.rc -eq 0
+
+- name: Install dependencies for building kernel modules and drivers
+  package:
+    name: "{{ nvidia_driver_dependencies }}"
+    state: present
+
+- name: Set up repos and install drivers and kernel modules (Debian)
+  block:
+    - name: Import nvidia-docker GPG key
+      apt_key:
+        url: https://nvidia.github.io/nvidia-docker/gpgkey
+        state: present
+
+    - name: Add repositories for graphics-driver support when nvidia cards are present
+      apt_repository:
+        repo: ppa:graphics-drivers/ppa
+        state: present
+        filename: nvidia-docker.list
+
+    #- name: Add repository for nvidia-docker
+    #  apt_repository:
+    #    repo: deb http://ppa.launchpad.net/graphics-drivers/ppa/{{ ansible_distribution|lower }} {{ ansible_distribution_release|lower }} main'
+    #    state: present
+    #    filename: 'graphics-drivers-{{ ansible_distribution|lower }}-ppa-{{ ansible_distribution_release|lower }}.list'
+
+    - name: install video driver for our card
+      apt:
+        name: "{{ nvidia_driver_packages }}"
+        state: latest
+        autoclean: yes
+        update_cache: yes
+      notify: reload docker
+
+    - name: Install nvidia-docker2 and container runtime
+      apt:
+        name: "{{ nvidia_docker_packages }}"
+        state: present
+        autoclean: yes
+        update_cache: yes
+      notify: reload docker
+
+- name: Add nvidia runtime to docker
+  copy:
+    src: docker-daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0664
+  notify: reload docker
+
+- meta: flush_handlers
+
+- name: reload systemctl and restart docker service if necessary
+  systemd:
+    daemon_reload: yes
+    name: docker
+    state: "{% if docker_requires_reload|default(False) %}restarted{% else %}started{% endif %}"
+  when: docker_requires_reload|default(False)
