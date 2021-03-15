@@ -16,9 +16,3 @@
     opts: "{{ plex_transcode_disk_mnt_opts }}"
   when: plex_transcode_disk
 
-- import_tasks: plex-debian.yml
-  when: ansible_os_family == "Debian"
-
-#UNTESTED
-#- import_tasks: plex-redhat.yml
-#  when: ansible_os_family == "RedHat"
