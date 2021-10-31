@@ -1,0 +1,18 @@
+---
+- name: Create transcode directory
+  file:
+    path: "{{ tdarr_transcode_disk_mnt }}"
+    state: directory
+    owner: "{{ media_user_uid }}"
+    group: "{{ media_user_gid }}"
+    mode: "{{ tdarr_transcode_disk_mode }}"
+
+- name: Create mount for transcode disk
+  mount:
+    name: "{{ tdarr_transcode_disk_mnt }}"
+    src: "{{ tdarr_transcode_disk_source }}"
+    fstype: "{{ tdarr_transcode_disk_fstype }}"
+    state: mounted
+    opts: "{{ tdarr_transcode_disk_mnt_opts }}"
+  when: tdarr_transcode_disk
+
