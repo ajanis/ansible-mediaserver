@@ -10,6 +10,7 @@ Deploy a full media-server / media-services environment with download agents, li
  - Radarr Movie download agent (Docker)
  - Bazarr Subtitle download agent (Docker)
  - Tautulli - Plex Media Library Stats (Docker)
+ - Tdarr - Distributed Transcoding and Encoding Service (Docker)
 
 ## Dependencies
 
@@ -23,6 +24,17 @@ The following ansible groups must be defined:
 ## Requirements
 ### Docker Role variables for media server / service containers
 ```
+
+# Only if utilizing Tdarr
+docker_networks:
+  tdarr:
+    driver: bridge
+    attachable: yes
+    ipam_config:
+      - subnet: 172.20.0.0/24
+        gateway: 172.20.0.2
+        iprange: 172.20.0.3/26
+
 docker_containers:
   plex:
     description: "Plex Media Server"
@@ -151,7 +163,85 @@ docker_containers:
       PUID: '{{ media_user_uid }}'
       PGID: '{{ media_user_gid }}'
       TZ: '{{ timezone }}'
+ 
+ # Only if Tdarr is utilized
+ tdarr:
+    description: Web UI and control server for Tdarr distributed transcoding
+    image: haveagitgat/tdarr:2.00.10
+    state: started
+    hostname: tdarr_server
+    privileged: yes
+    runtime: nvidia
+    recreate: "{{ docker_recreate | default(false) }}"
+    restart_policy: unless-stopped
+    memory: 1G
+    networks:
+      - name: tdarr
+    ports:
+      - 8265:8265
+      - 8266:8266
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ media_root }}/configs/tdarr_server:/app/server"
+      - "{{ media_root }}/configs/tdarr:/app/configs"
+      - "{{ media_root }}/tv:/media/tv"
+      - "{{ media_root }}/movies:/media/movies"
+      - "{{ tdarr_transcode_directory }}:/temp"
+    env:
+      PUID: "{{ media_user_uid }}"
+      PGID: "{{ media_user_gid }}"
+      serverIP: "0.0.0.0"
+      serverPort: "8266"
+      webUIPort: "8265"
+      TZ: "{{ timezone }}"
+      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_VISIBLE_DEVICES: all
+    devices:
+      - "/dev/dri/card0:/dev/dri/card0"
+      - "/dev/dri/renderD128:/dev/dri/renderD128"
+    logging:
+      driver: journald
+      options:
+        tag: tdarr
 
+  tdarr_node:
+    description: Worker node to perform transcoding for Tdarr
+    image: "haveagitgat/tdarr_node:{{ tdarr_version }}"
+    state: started
+    hostname: tdarr_node1
+    runtime: nvidia
+    recreate: "{{ docker_recreate | default(false) }}"
+    restart_policy: unless-stopped
+    networks:
+      - name: tdarr
+    privileged: yes
+    memory: 6G
+    ports:
+      - 8267:8267
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "{{ media_root }}/configs/tdarr:/app/configs"
+      - "{{ media_root }}/tv:/media/tv"
+      - "{{ media_root }}/movies:/media/movies"
+      - "{{ tdarr_transcode_directory }}:/temp"
+    env:
+      PUID: "{{ media_user_uid }}"
+      PGID: "{{ media_user_gid }}"
+      nodeID: node1
+      nodeIP: tdarr_node1
+      nodePort: "8267"
+      serverIP: tdarr_server
+      serverPort: "8266"
+      TZ: "{{ timezone }}"
+      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_VISIBLE_DEVICES: all
+    devices:
+      - "/dev/dri/card0:/dev/dri/card0"
+      - "/dev/dri/renderD128:/dev/dri/renderD128"
+    logging:
+      driver: journald
+      options:
+        tag: tdarr_node
 ```
 
 ### Additional Deployment Option Requirements
@@ -213,10 +303,22 @@ plex_server_ip:
 plex_username:
 plex_password:
 plex_token:
-plex_ramfs_transcode: False
-ramfs_transcode_path: /transcode
-ramfs_mode: 01777
-ramfs_size_mb: 8192
+plex_transcode_disk: False
+plex_transcode_disk_mnt: /transcode
+plex_transcode_disk_mnt_opts: ssd,discard,noatime
+plex_transcode_disk_dev: /dev/sdb
+plex_transcode_disk_size_mb: 32768
+plex_transcode_disk_fstype: btrfs
+plex_transcode_disk_mode: 0774
+
+# Tdarr Transcode Configs
+tdarr_transcode_disk: False
+tdarr_transcode_disk_mnt: /transcode
+tdarr_transcode_disk_mnt_opts: ssd,discard,noatime
+tdarr_transcode_disk_dev: /dev/sdb
+tdarr_transcode_disk_size_mb: 32768
+tdarr_transcode_disk_fstype: btrfs
+tdarr_transcode_disk_mode: 0774
 
 ### FILESERVER CONFIGS
 afp_ldap_auth: False
