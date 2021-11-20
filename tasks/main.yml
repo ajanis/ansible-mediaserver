@@ -21,3 +21,8 @@
   when: "'plexservers' in group_names"
   tags:
     - plexservices
+
+- import_tasks: tdarr.yml
+  when: "'tdarr' in group_names"
+  tags:
+    - tdarr

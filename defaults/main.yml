@@ -31,6 +31,15 @@ plex_transcode_disk_size_mb: 32768
 plex_transcode_disk_fstype: btrfs
 plex_transcode_disk_mode: 0774
 
+# Tdarr Transcode Configs
+tdarr_transcode_disk: False
+tdarr_transcode_disk_mnt: /transcode
+tdarr_transcode_disk_mnt_opts: ssd,discard,noatime
+tdarr_transcode_disk_dev: /dev/sdb
+tdarr_transcode_disk_size_mb: 32768
+tdarr_transcode_disk_fstype: btrfs
+tdarr_transcode_disk_mode: 0774
+
 ### FILESERVER CONFIGS
 afp_ldap_auth: False
 epel_rpm: https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_version }}.noarch.rpm
