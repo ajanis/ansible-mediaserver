@@ -72,7 +72,7 @@ nginx_backends:
 
 nginx_vhosts:
   - servername: "home.{{ www_domain }}"
-    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_default_ipv4.address }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_eth0.ipv4.address }}"
     serverlisten: "80 default_server"
     locations:
       - name: /
@@ -179,7 +179,7 @@ nginx_vhosts:
 
 
   - servername: "home.{{ www_domain }}"
-    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_default_ipv4.address }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_eth0.ipv4.address }}"
     serverlisten: "8080 default_server"
     locations:
       - name: /
@@ -371,7 +371,7 @@ nginx_vhosts_ssl:
 
 
   - servername: "home.{{ www_domain }}"
-    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_default_ipv4.address }}"
+    serveralias: "{{ www_domain }} www.{{ www_domain }} {{ ansible_eth0.ipv4.address }}"
     serverlisten: "8443 default_server"
     ssl_certchain: "{{ ssl_certchain }}"
     ssl_privkey: "{{ ssl_privkey }}"
