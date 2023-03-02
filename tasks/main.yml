@@ -7,10 +7,10 @@
     - "{{ ansible_os_family }}.yml"
   tags:
     - always
-- import_tasks: mediaservices.yml
-  when: "'mediaservices' in group_names"
+- import_tasks: mediaservers.yml
+  when: "'mediaservers' in group_names"
   tags:
-    - mediaservices
+    - mediaservers
 
 - import_tasks: nzb.yml
   when: "'nzbservices' in group_names"

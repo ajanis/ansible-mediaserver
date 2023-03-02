@@ -5,7 +5,7 @@
 
 - name: "[Media Server] :: Deploy Plex Media Server, NZB Services (SabNZBd, Sonarr, Radarr, Ombi) Monitoring Services (Tautulli, Telegraf), Web Services (Apache), File Services (Samba,AFP,Avahi) :: Includes Ansible roles for OpenLDAP-Client, CephFS/NFS"
   hosts:
-    - mediaservices
+    - mediaservers
     - webservices
     - fileservices
   remote_user: root
@@ -24,10 +24,10 @@
         - storage_backend == "cephfs"
     - import_role:
         name: mediaserver
-      when: "'mediaservices' in group_names"
+      when: "'mediaservers' in group_names"
     - import_role:
         name: docker
-      when: "'mediaservices' in group_names"
+      when: "'mediaservers' in group_names"
     - import_role:
         name: nginx
       when: "'webservices' in group_names"
